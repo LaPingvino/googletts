@@ -5,27 +5,29 @@ package tts
 
 import (
 	"os/exec"
-	"html/template"
 )
 
 var Player = "cvlc"
+var PlayerAddArgs = "--play-and-exit"
 
 func ttsLink(text string, language string) string {
-	return "http://translate.google.com/translate_tts?tl=" + language + "&q=" + template.URLQueryEscaper(text)
+	return "http://translate.google.com/translate_tts?tl=" + language + "&q=" + text
 }
 
 type Text struct {
 	Text string
 	Language string
 	Player string
+	PlayerAddArgs string
 }
 
-func (t Text) Play() err {
-	t.PlayWith(t.Player)
+func (t Text) Play() error {
+	err := t.PlayWith(t.Player, t.PlayerAddArgs)
+	return err
 }
 
-func (t Text) PlayWith(player string) err {
-	cmd := exec.Command(player, ttsLink(t.Text, t.Language))
+func (t Text) PlayWith(player string, playerAddArgs string) error {
+	cmd := exec.Command(player, playerAddArgs, ttsLink(t.Text, t.Language))
 	err := cmd.Run()
 	return err
 }
@@ -35,12 +37,13 @@ func (t Text) GetURL() string {
 }
 
 func NewText(text string, language string) Text {
-	if len(text) < 2 {
-		text = "en"
+	if len(language) < 2 {
+		language = "en"
 	}
 	return Text{
 		Text: text,
 		Language: language,
 		Player: Player,
+		PlayerAddArgs: PlayerAddArgs,
 	}
 }
